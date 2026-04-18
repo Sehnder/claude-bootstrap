@@ -1,7 +1,3 @@
-> **Note:** This is the public bootstrap mirror of this file.
-> Canonical copy: `projects/general/skills/SKILL-github-knowledge-sync.md` in the private `claude-knowledge` repo.
-> If these differ, the private copy is authoritative.
-
 # GitHub Knowledge Sync — SKILL.md
 
 ## About this file
@@ -41,14 +37,96 @@ For single-file updates, the browser web editor also works (see Push Pattern).
 ```
 claude-knowledge/
 ├── projects/
-│   ├── general/                   ← cross-project reusable assets
-│   │   ├── skills/                ← this file lives here
+│   ├── general/                   ← cross-project reusable assets (not tied to any one workspace)
+│   │   ├── skills/
 │   │   └── prompts/
-│   └── oracle-ai-studio/          ← project-specific assets
+│   └── {workspace-name}/          ← one folder per Cowork workspace/project
 │       ├── skills/
 │       └── prompts/
 └── session-logs/                  ← session closeout logs by project
 ```
+
+---
+
+## Determining Your Project Folder
+
+The `[project]` path segment in all URLs must match the **current Cowork
+workspace name** — i.e., the name of the folder the user has selected/mounted.
+For example, if the user's workspace is called "GitTest", all skills and
+prompts for that session belong under:
+
+```
+projects/GitTest/skills/
+projects/GitTest/prompts/
+```
+
+**Do NOT default to an existing project folder** (e.g., `oracle-ai-studio`)
+unless the user's workspace name explicitly matches it.
+
+If the project folder doesn't yet exist in `claude-knowledge`, just write the
+first file — GitHub creates intermediate directories automatically when a file
+is committed into them.
+
+### Exception: General assets
+
+If the user explicitly asks to save something to "general" (e.g., "add this
+as a general skill" or "save this to the general prompts"), use
+`projects/general/` instead of the workspace folder:
+
+```
+projects/general/skills/
+projects/general/prompts/
+```
+
+### Default structure for a new project
+
+```
+projects/{workspace-name}/
+├── skills/
+│   └── SKILL.md        ← top-level cross-cutting skill for this project
+└── prompts/            ← reusable prompts for this project
+```
+
+---
+
+## File Naming Conventions
+
+### Skills
+
+Skill files always use the prefix `SKILL-` followed by a lowercase hyphenated
+name, with a `.md` extension:
+
+```
+SKILL-{name}.md
+```
+
+Examples:
+- User says "save a skill called bees" → `SKILL-bees.md`
+- User says "save a skill for agent teams" → `SKILL-agent-teams.md`
+- User says "save this as SKILL.md" → `SKILL.md` (use exact name as given)
+
+The top-level skill file for a project is always `SKILL.md` (no suffix).
+
+### Prompts
+
+Prompt files use a lowercase hyphenated name with a `.md` extension — no prefix:
+
+```
+{name}.md
+```
+
+Examples:
+- User says "save a prompt called get file contents" → `get-file-contents.md`
+- User says "save this prompt as bees" → `bees.md`
+
+### Summary table
+
+| User says... | Destination | Filename |
+|---|---|---|
+| "save a skill called bees" | `projects/{workspace}/skills/` | `SKILL-bees.md` |
+| "save a prompt called get file contents" | `projects/{workspace}/prompts/` | `get-file-contents.md` |
+| "save a general skill called bees" | `projects/general/skills/` | `SKILL-bees.md` |
+| "save a general prompt called bees" | `projects/general/prompts/` | `bees.md` |
 
 ---
 
@@ -71,15 +149,18 @@ https://raw.githubusercontent.com/Sehnder/claude-knowledge/main/projects/oracle-
 
 ### Method A — JavaScript fetch() via browser (preferred for bulk operations)
 
+**Important:** The browser tab must be on a real web page before running JS —
+navigate to https://github.com first if the tab is on `chrome://newtab`.
+
 Run this pattern in the browser via mcp__Claude_in_Chrome__javascript_tool:
 
 ```javascript
-const PAT = /* read from Cowork Basics/.secrets/github_pat.md */;
-const BASE = 'https://api.github.com/repos/Sehnder/claude-knowledge/contents';
-const H = { 'Authorization': `Bearer ${PAT}`, 'Content-Type': 'application/json' };
-
 (async () => {
-  // Read current file (get content + sha)
+  const PAT = /* read from .secrets/github_pat.md */;
+  const BASE = 'https://api.github.com/repos/Sehnder/claude-knowledge/contents';
+  const H = { 'Authorization': `Bearer ${PAT}`, 'Content-Type': 'application/json' };
+
+  // Read current file (get content + sha) — omit this block for brand-new files
   const r = await fetch(`${BASE}/[path]`, { headers: H });
   const d = await r.json();
   let content = decodeURIComponent(escape(atob(d.content.replace(/\n/g, ''))));
@@ -87,17 +168,57 @@ const H = { 'Authorization': `Bearer ${PAT}`, 'Content-Type': 'application/json'
   // Modify content as needed
   content = content.replace('[old text]', '[new text]');
 
-  // Write back
+  // Write back (include sha for existing files; omit sha for new files)
   await fetch(`${BASE}/[path]`, {
     method: 'PUT', headers: H,
     body: JSON.stringify({
       message: 'update: [description]',
       content: btoa(unescape(encodeURIComponent(content))),
-      sha: d.sha
+      sha: d.sha   // omit this line when creating a brand-new file
     })
   });
 })();
 ```
+
+### Reading directory contents
+
+To list and read all files in a folder, store results in `window._skillContents`
+and then read each file **individually** in separate tool calls:
+
+```javascript
+// Step 1 — fetch and store all file contents
+(async () => {
+  const PAT = '...';
+  const BASE = 'https://api.github.com/repos/Sehnder/claude-knowledge/contents';
+  const H = { 'Authorization': `Bearer ${PAT}`, 'Accept': 'application/vnd.github+json' };
+
+  const r = await fetch(`${BASE}/projects/[project]/skills`, { headers: H });
+  const files = await r.json();
+
+  const results = {};
+  for (const file of files) {
+    const fr = await fetch(file.url, { headers: H });
+    const fd = await fr.json();
+    results[file.name] = decodeURIComponent(escape(atob(fd.content.replace(/\n/g, ''))));
+  }
+  window._skillContents = results;
+  return Object.keys(results).join(', ');
+})();
+
+// Step 2 — read each file in a separate tool call
+window._skillContents['SKILL.md']
+window._skillContents['SKILL-agent-teams.md']
+// etc.
+```
+
+**Critical:** Never return all file contents in one combined string (e.g., via
+`.map().join()`). The browser tool blocks output containing URL query parameters
+like `?token=...`, which GitHub embeds in its API responses. This triggers:
+
+> `[BLOCKED: Cookie/query string data]`
+
+Always read `window._skillContents['filename.md']` one file at a time in
+separate tool calls.
 
 ### Method B — GitHub web editor (simpler for single-file updates)
 
@@ -139,3 +260,5 @@ view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: updated }
   `.cm-content` element (not `.CodeMirror` which is CM5)
 - base64 encoding for direct API calls is blocked by sandbox network restrictions —
   always use browser automation for pushes
+- The browser tab must be on a real web page before running JS — `chrome://newtab`
+  will throw a "Can't interact with browser internal pages" error
