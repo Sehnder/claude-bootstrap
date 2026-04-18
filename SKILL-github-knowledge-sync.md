@@ -29,10 +29,10 @@ PAT is stored at:
 Read it at the start of any push operation. The PAT is scoped to this repo
 only with Contents: Read and Write permissions.
 
-Note: Direct GitHub API calls via bash are blocked in the Cowork sandbox
-(no outbound network). However, JavaScript fetch() within the browser DOES work
-with the PAT — this is the preferred push mechanism for bulk operations.
-For single-file updates, the browser web editor also works (see Push Pattern).
+Note: Direct GitHub API calls via bash/curl work in the Cowork sandbox **if**
+`api.github.com` is in your egress allowlist (Claude Desktop → Settings →
+Capabilities → Code execution → Additional allowed domains). If not configured,
+use JavaScript fetch() via browser instead (see Push Pattern).
 
 ---
 
@@ -280,7 +280,5 @@ view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: updated }
   clicking the button a second time reliably opens it
 - The GitHub editor uses CodeMirror 6; access the view via `cmTile.view` on the
   `.cm-content` element (not `.CodeMirror` which is CM5)
-- base64 encoding for direct API calls is blocked by sandbox network restrictions —
-  always use browser automation for pushes
 - The browser tab must be on a real web page before running JS — `chrome://newtab`
   will throw a "Can't interact with browser internal pages" error
