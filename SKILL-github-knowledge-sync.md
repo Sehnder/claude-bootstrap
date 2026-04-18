@@ -45,7 +45,7 @@ For single-file updates, the browser web editor also works (see Push Pattern).
 >
 > Example for workspace "GitTest":
 > - A prompt called "order pizza" → `projects/GitTest/prompts/order-pizza.md`
-> - A skill called "bees" → `projects/GitTest/skills/SKILL-bees.md`
+> - A skill called "bees" → `projects/GitTest/skills/SKILL.md` (appended by default; only create a separate file if explicitly instructed)
 
 > **CRITICAL — PAT location:** The PAT file is at `.secrets/github_pat.md` **within the workspace folder** (e.g., `GitTest/.secrets/github_pat.md`). Read it using the `Read` tool before any push operation.
 
@@ -114,16 +114,17 @@ projects/{workspace-name}/
 
 ### Skills
 
-Skill files always use the prefix `SKILL-` followed by a lowercase hyphenated
-name, with a `.md` extension:
+**Default behavior:** Unless the user explicitly requests a separate named file, always add skill content to `SKILL.md`. Only create a separate `SKILL-{name}.md` file when explicitly instructed (e.g., "save this as a new skill file called bees").
 
 ```
-SKILL-{name}.md
+SKILL.md              ← default target for all skills
+SKILL-{name}.md       ← only if explicitly requested
 ```
 
 Examples:
-- User says "save a skill called bees" → `SKILL-bees.md`
-- User says "save a skill for agent teams" → `SKILL-agent-teams.md`
+- User says "add a skill called bees" → append to `SKILL.md`
+- User says "save a skill for agent teams" → append to `SKILL.md`
+- User says "create a separate skill file called bees" → `SKILL-bees.md`
 - User says "save this as SKILL.md" → `SKILL.md` (use exact name as given)
 
 The top-level skill file for a project is always `SKILL.md` (no suffix).
@@ -144,7 +145,7 @@ Examples:
 
 | User says... | Destination | Filename |
 |---|---|---|
-| "save a skill called bees" | `projects/{workspace}/skills/` | `SKILL-bees.md` |
+| "save a skill called bees" | `projects/{workspace}/skills/` | `SKILL.md` (appended by default) |
 | "save a prompt called get file contents" | `projects/{workspace}/prompts/` | `get-file-contents.md` |
 | "save a general skill called bees" | `projects/general/skills/` | `SKILL-bees.md` |
 | "save a general prompt called bees" | `projects/general/prompts/` | `bees.md` |
