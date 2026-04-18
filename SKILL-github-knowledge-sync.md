@@ -1,3 +1,7 @@
+> **Note:** This is the public bootstrap mirror of this file.
+> Canonical copy: `projects/general/skills/SKILL-github-knowledge-sync.md` in the private `claude-knowledge` repo.
+> If these differ, the private copy is authoritative.
+
 # GitHub Knowledge Sync — SKILL.md
 
 ## About this file
