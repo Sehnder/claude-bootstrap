@@ -36,6 +36,23 @@ For single-file updates, the browser web editor also works (see Push Pattern).
 
 ---
 
+## Critical Rules
+
+> **CRITICAL — File placement:** Skills and prompts MUST go in their respective subfolders, never directly in the project root.
+>
+> - Skills → `projects/{workspace}/skills/SKILL-{name}.md`
+> - Prompts → `projects/{workspace}/prompts/{name}.md`
+>
+> Example for workspace "GitTest":
+> - A prompt called "order pizza" → `projects/GitTest/prompts/order-pizza.md`
+> - A skill called "bees" → `projects/GitTest/skills/SKILL-bees.md`
+
+> **CRITICAL — PAT location:** The PAT file is at `.secrets/github_pat.md` **within the workspace folder** (e.g., `GitTest/.secrets/github_pat.md`). Read it using the `Read` tool before any push operation.
+
+> **CRITICAL — Bash works:** Direct GitHub API calls via bash/curl DO work in the Cowork sandbox. Use `curl` with the PAT for all push operations — no browser automation required unless the PAT lacks repo access.
+
+---
+
 ## Folder Structure
 
 ```
