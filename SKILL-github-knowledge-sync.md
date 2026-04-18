@@ -24,7 +24,7 @@ Last updated: 2026-04-18
 ## Credentials
 
 PAT is stored at:
-`Cowork Basics/.secrets/github_pat.md`
+`.secrets/github_pat.md`
 
 Read it at the start of any push operation. The PAT is scoped to this repo
 only with Contents: Read and Write permissions.
