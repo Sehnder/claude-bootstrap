@@ -40,7 +40,7 @@ For single-file updates, the browser web editor also works (see Push Pattern).
 
 > **CRITICAL — File placement:** Skills and prompts MUST go in their respective subfolders, never directly in the project root.
 >
-> - Skills → `projects/{workspace}/skills/SKILL-{name}.md`
+> - Skills → `projects/{workspace}/skills/SKILL.md` (default) or `SKILL-{name}.md` (only when explicitly requested)
 > - Prompts → `projects/{workspace}/prompts/{name}.md`
 >
 > Example for workspace "GitTest":
